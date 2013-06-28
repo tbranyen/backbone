@@ -25,6 +25,14 @@
   var slice = array.slice;
   var splice = array.splice;
 
+  // Normalize the `define` and `require` calls.
+  var require = root.require || function() {};
+  // Call the exports function or the crafted one with the Node.js `require`.
+  var define = root.define || function(cb) { cb.call(this, require); };
+
+  // Define the module contents.
+  define(function(require) {
+
   // The top-level namespace. All public Backbone classes and modules will
   // be attached to this. Exported for both the browser and the server.
   var Backbone;
@@ -38,12 +46,11 @@
   Backbone.VERSION = '1.0.0';
 
   // Require Underscore, if we're on the server, and it's not already present.
-  var _ = root._;
-  if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
+  var _ = require("underscore") || root._;
 
   // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
   // the `$` variable.
-  Backbone.$ = root.jQuery || root.Zepto || root.ender || root.$;
+  Backbone.$ = require("jquery") || root.jQuery || root.Zepto || root.ender || root.$;
 
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
@@ -1573,5 +1580,9 @@
       model.trigger('error', model, resp, options);
     };
   };
+
+  return Backbone;
+
+  });
 
 }).call(this);
